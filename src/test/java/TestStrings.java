@@ -3,7 +3,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BinaryOperator;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 public class TestStrings {
 
     private static List<String> buildStrings() {
+        logCurrentMethod();
         final long start = System.currentTimeMillis();
         System.out.println("Start_build_string_list: " + start);
         final int count10Million = 10 * 1000 * 1000;
@@ -27,23 +28,123 @@ public class TestStrings {
 
     @Test
     public void testCollectors_joininng() {
+        logCurrentMethod();
         final List<String> strings = buildStrings();
         final long start = System.currentTimeMillis();
         System.out.println("Start join: " + start);
         final String join = strings.stream().collect(Collectors.joining());
         final long end = System.currentTimeMillis();
         System.out.println("End join: " + end);
-        System.out.println("End concatentaion: " + (end - start));
+        System.out.println("End join: " + (end - start));
     }
 
     @Test
     public void testImplicitReduce_joininng() {
+        logCurrentMethod();
         final List<String> strings = buildStrings();
         final long start = System.currentTimeMillis();
         System.out.println("Start join: " + start);
-        final String join = strings.stream().reduce((s, s2) -> s + s2).get();
+        //[IP] actually it hangs
+        //final String join = strings.stream().reduce((s, s2) -> s + s2).get();
         final long end = System.currentTimeMillis();
         System.out.println("End join: " + end);
-        System.out.println("End concatentaion: " + (end - start));
+        System.out.println("End join: " + (end - start));
+    }
+
+    @Test
+    public void testStringJoiner() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        final StringJoiner joiner = new StringJoiner("");
+        strings.forEach(s -> joiner.add(s));
+        final String result = joiner.toString();
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @Test
+    public void testStaticStringClass_join() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        final String join = String.join("", strings);
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Test
+    public void testStringIterating() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        String join = "";
+        for (int i=0; i < strings.size(); i++){
+            join+=strings.get(i);
+        }
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Test
+    public void testStringBuilderIterating() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        final StringBuilder join = new StringBuilder();
+        for (int i=0; i < strings.size(); i++){
+            join.append(strings.get(i));
+        }
+        final String result = join.toString();
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Test
+    public void testStringBuilderWithSmallInitialCapacityIterating() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        final StringBuilder join = new StringBuilder(10);
+        for (int i=0; i < strings.size(); i++){
+            join.append(strings.get(i));
+        }
+        final String result = join.toString();
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    @Test
+    public void testStringBuilderWithBigInitialCapacityIterating() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+        final StringBuilder join = new StringBuilder(9 * 1000 * 1000);
+        for (int i=0; i < strings.size(); i++){
+            join.append(strings.get(i));
+        }
+        final String result = join.toString();
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    private static void logCurrentMethod(){
+        System.out.println(Thread.currentThread().getStackTrace()[2].toString());
     }
 }
