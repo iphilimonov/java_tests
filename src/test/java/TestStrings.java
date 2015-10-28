@@ -4,6 +4,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,13 +40,35 @@ public class TestStrings {
     }
 
     @Test
-    public void testImplicitReduce_joininng() {
+    public void testImplicitReduceWithFuture(){
         logCurrentMethod();
         final List<String> strings = buildStrings();
         final long start = System.currentTimeMillis();
         System.out.println("Start join: " + start);
         //[IP] actually it hangs
-        //final String join = strings.stream().reduce((s, s2) -> s + s2).get();
+        final Future<String> future = new FutureTask<>(() -> strings.stream().reduce((s, s2) -> s + s2).get());
+        try {
+            future.get(10, TimeUnit.MINUTES);
+        } catch (final InterruptedException | TimeoutException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        final long end = System.currentTimeMillis();
+        System.out.println("End join: " + end);
+        System.out.println("End join: " + (end - start));
+    }
+
+    @Test
+    public void testImplicitReduce_joininng() {
+        logCurrentMethod();
+        final List<String> strings = buildStrings();
+        final long start = System.currentTimeMillis();
+        System.out.println("Start join: " + start);
+           final Future<String> val = CompletableFuture.supplyAsync(()-> strings.stream().reduce((s, s2) -> s + s2).get());
+        try {
+            val.get();
+        } catch (final InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
         final long end = System.currentTimeMillis();
         System.out.println("End join: " + end);
         System.out.println("End join: " + (end - start));
@@ -58,7 +81,7 @@ public class TestStrings {
         final long start = System.currentTimeMillis();
         System.out.println("Start join: " + start);
         final StringJoiner joiner = new StringJoiner("");
-        strings.forEach(s -> joiner.add(s));
+        strings.forEach(joiner::add);
         final String result = joiner.toString();
         final long end = System.currentTimeMillis();
         System.out.println("End join: " + end);
